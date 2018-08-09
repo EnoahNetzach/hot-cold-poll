@@ -1,5 +1,4 @@
 import ChainPoll from './ChainPoll'
-import { createTimeSlice } from './View'
 
 function createItem(content) {
   return {
@@ -10,10 +9,17 @@ function createItem(content) {
 
 let uuid = 0
 
+export const messages = {
+  BLOCK: 'BLOCK',
+  GO: 'GO',
+  REMOVE: 'REMOVE',
+  START: 'START',
+}
+
 export default class {
-  constructor({ createLongLiving, createShortLiving, maxSize, minSize }) {
-    this.createLongLiving = createLongLiving
-    this.createShortLiving = createShortLiving
+  constructor({ createCold, createHot, maxSize, minSize }) {
+    this.createCold = createCold
+    this.createHot = createHot
     this.maxSize = Math.max(1, Math.max(minSize, maxSize))
     this.minSize = minSize
 
@@ -25,37 +31,31 @@ export default class {
 
   async init() {
     this.poll.push(
-      ...(await Promise.all(
-        Array.from({ length: this.minSize }).map(async () => createItem(await this.createLongLiving())),
-      )),
+      ...(await Promise.all(Array.from({ length: this.minSize }).map(async () => createItem(await this.createHot())))),
     )
   }
 
-  async get() {
-    const tuuid = uuid++
+  async get(notify = () => {}) {
     return new Promise(resolveItem =>
       this.waitPoll.demand(
         () =>
           new Promise(resolveDemand => {
             const usagePromise = new Promise(async resolveUsage => {
+              const usage = this.poll.filter(({ inUse }) => inUse).length
+              const shouldWait = usage >= this.maxSize
+
+              const previousPoll = [...this.usagePoll]
+              const toWait = shouldWait ? Promise.race(previousPoll) : null
+
+              notify(shouldWait ? messages.BLOCK : messages.GO, usage, this.maxSize, previousPoll.length)
+
               this.waitUsagePoll.demand(
                 () =>
                   new Promise(async resolveUsageDemand => {
-                    const shouldWait = this.poll.filter(({ inUse }) => inUse).length >= this.maxSize
-                    createTimeSlice(
-                      `enter ${tuuid} ${shouldWait ? 'BLOCKED' : 'GO'} [${
-                        this.poll.filter(({ inUse }) => inUse).length
-                      } / ${this.maxSize}]`,
-                      shouldWait,
-                    )
+                    const freed = shouldWait ? await toWait : null
 
-                    const toWait = [...this.usagePoll]
-                    if (shouldWait) {
-                      await Promise.race(toWait)
-                    }
-
-                    createTimeSlice(`resolve ${tuuid}`, false)
                     resolveUsageDemand()
+                    notify(messages.START, freed)
 
                     const firstNotUsed = this.poll.find(({ inUse }) => !inUse)
                     if (firstNotUsed) {
@@ -77,7 +77,7 @@ export default class {
                       this.poll.push(item)
                       resolveDemand()
 
-                      item.content = await this.createShortLiving()
+                      item.content = await this.createCold()
 
                       resolveItem({
                         item: item.content,
@@ -90,7 +90,13 @@ export default class {
                     }
                   }),
               )
-            }).then(() => this.usagePoll.splice(this.usagePoll.indexOf(usagePromise), 1))
+            }).then(() => {
+              const index = this.usagePoll.indexOf(usagePromise)
+              if (index > -1) {
+                this.usagePoll.splice(index, 1)
+              }
+              return notify(messages.REMOVE)
+            })
 
             this.usagePoll.push(usagePromise)
           }),

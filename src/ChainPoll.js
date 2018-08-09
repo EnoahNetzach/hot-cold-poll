@@ -1,5 +1,3 @@
-let count = 0
-
 export default class {
   constructor(resolutor) {
     this.resolutor = resolutor
@@ -8,8 +6,6 @@ export default class {
   }
 
   async demand(resolutor = this.resolutor) {
-    const demand = ++count
-
     return new Promise(async resolve =>
       this.poll.push(
         Promise.all([...this.poll]).then(async () => {

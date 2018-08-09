@@ -1,5 +1,5 @@
 import ChainPoll from './ChainPoll'
-import HotColdPoll from './HotColdPoll'
+import HotColdPoll, { messages } from './HotColdPoll'
 import Square from './Square'
 import View, { createTimeSlice, registerOnStopDemand, updateDemand } from './View'
 
@@ -14,7 +14,7 @@ const createSquare = async (id, freePoll = (square, reset) => reset()) => {
     original: new Square(View, id),
   }
 
-  createTimeSlice(`new Square #${id}`)
+  createTimeSlice(`new square #${id}`)
 
   const reset = () =>
     new Promise(resolve => {
@@ -27,6 +27,8 @@ const createSquare = async (id, freePoll = (square, reset) => reset()) => {
 
   await square.original.open()
 
+  createTimeSlice(`open square #${id}`)
+
   return square
 }
 
@@ -36,7 +38,7 @@ async function use(square, pid) {
   square.inUse = true
   square.original.use(pid, duration)
 
-  createTimeSlice(`use Square #${square.original.id}`)
+  createTimeSlice(`use square #${square.original.id}`)
 
   await timeout(duration)
   square.free()
@@ -50,26 +52,26 @@ function unuse(square) {
 async function remove(square) {
   square.inUse = false
   square.original.unuse()
-  await timeout(500)
+  // await timeout(500)
   await square.original.close()
 }
 
 async function run() {
   const poll = new HotColdPoll({
-    createLongLiving: () =>
+    createCold: () =>
+      createSquare(totalSquareNumber++, square => {
+        remove(square)
+
+        createTimeSlice(`free cold square #${square.original.id}`)
+      }),
+    createHot: () =>
       createSquare(totalSquareNumber++, (square, reset) => {
         unuse(square)
         reset()
 
-        createTimeSlice(`free long living Square #${square.original.id}`)
+        createTimeSlice(`free hot square #${square.original.id}`)
       }),
-    createShortLiving: () =>
-      createSquare(totalSquareNumber++, square => {
-        remove(square)
-
-        createTimeSlice(`free short living Square #${square.original.id}`)
-      }),
-    maxSize: 50,
+    maxSize: 15,
     minSize: 5,
   })
 
@@ -81,7 +83,30 @@ async function run() {
     await timeout(200)
 
     const pid = squareUid++
-    const { item: square, release } = await poll.get()
+    const { item: square, release } = await poll.get((message, ...args) => {
+      switch (message) {
+        case messages.BLOCK: {
+          const [inUse, max, before] = args
+          createTimeSlice(`enter demand ${pid} BLOCK [${inUse} / ${max}] (${before} before)`)
+          break
+        }
+        case messages.GO: {
+          const [inUse, max] = args
+          createTimeSlice(`enter demand ${pid} GO [${inUse} / ${max}]`, false)
+          break
+        }
+        case messages.REMOVE:
+          createTimeSlice(`remove promise ${pid}`, false)
+          break
+        case messages.START: {
+          const [freed] = args
+          createTimeSlice(`resolve demand ${pid} (${freed === null ? 'none' : freed} freed)`, false)
+          break
+        }
+      }
+
+      return pid
+    })
 
     if (!square) {
       return
@@ -96,7 +121,7 @@ async function run() {
   })
 
   const demandInterval = setInterval(() => {
-    const demandUpdate = Math.round(Math.random() * 10)
+    const demandUpdate = Math.round(Math.random() * 20)
     updateDemand(demandUpdate)
 
     Array.from({ length: demandUpdate }).forEach(() => demandPoll.demand())
@@ -107,14 +132,6 @@ async function run() {
 
     createTimeSlice('stop demand', false)
   })
-
-  // for (let i = 0; i < 10; i++) {
-  //   updateDemand(1)
-  //   demandPoll.demand()
-
-  //   createTimeSlice('increase demand +1', false)
-  //   // await timeout(50)
-  // }
 }
 
-run()
+// run()
