@@ -1,0 +1,120 @@
+* {
+  box-sizing: content-box;
+}
+
+.stopDemand {
+  background-color: orangered;
+  border: 1px solid firebrick;
+  bottom: 30px;
+  color: whitesmoke;
+  cursor: pointer;
+  display: inline-block;
+  padding: 10px 25px;
+  position: fixed;
+  right: 30px;
+  text-decoration: none;
+}
+
+.stopDemand:hover {
+  background-color: tomato;
+}
+
+.stopDemand:active {
+  bottom: 29px;
+  box-shadow: inset 4px 4px 2px -3px firebrick;
+}
+
+.slice {
+  background: lavender;
+  margin: 5px 0;
+  padding: 10px;
+}
+
+.reason {
+  color: slategray;
+  margin: 10px 5px;
+  text-transform: capitalize;
+}
+
+.grid {
+  background: lightgray;
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(5, minmax(50px, 1fr));
+  grid-auto-rows: auto 1fr;
+  max-width: 500px;
+  padding: 5px;
+  width: 100%;
+}
+
+.demand {
+  grid-column: 1 / -1;
+  margin: 10px 0;
+}
+
+.square {
+  background: azure;
+  color: darkgray;
+  min-height: 50px;
+  min-width: 50px;
+  position: relative;
+  text-align: center;
+  transition: background 250ms linear;
+}
+
+.square::before {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 0;
+  padding-bottom: 80%;
+}
+
+.square.open {
+  background: greenyellow;
+}
+
+.square.used {
+  background: darkorchid;
+  color: white;
+}
+
+.square.unused {
+  background: cadetblue;
+  color: white;
+}
+
+.content {
+  align-items: center;
+  display: inline-flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.square > small {
+  border: solid 2px transparent;
+  color: lightgray;
+  line-height: 1;
+  position: absolute;
+}
+
+.index {
+  left: 0;
+  top: 0;
+}
+
+.times-used {
+  right: 0;
+  top: 0;
+}
+
+.duration {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
