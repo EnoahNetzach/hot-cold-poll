@@ -3,7 +3,6 @@ import HotColdPoll from './HotColdPoll'
 const timeout = delay => new Promise(resolve => setTimeout(resolve, delay))
 
 describe.skip('HotColdPoll', () => {
-  let poll
   let longLiving = []
   let shortLiving = []
   let items = []

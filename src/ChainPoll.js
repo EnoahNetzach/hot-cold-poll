@@ -6,14 +6,20 @@ export default class {
   }
 
   async demand(resolutor = this.resolutor) {
-    return new Promise(async resolve =>
-      this.poll.push(
-        Promise.all([...this.poll]).then(async () => {
-          resolve(await resolutor())
+    const toWait = [...this.poll]
+    this.poll.splice(0, this.poll.length)
 
-          this.poll.pop()
-        }),
-      ),
-    )
+    return new Promise(async resolve => {
+      const demandPromise = Promise.all(toWait).then(async () => {
+        resolve(await resolutor())
+
+        const index = this.poll.indexOf(demandPromise)
+        if (index > -1) {
+          this.poll.splice(index, 1)
+        }
+      })
+
+      this.poll.push(demandPromise)
+    })
   }
 }

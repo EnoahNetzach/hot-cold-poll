@@ -2,8 +2,8 @@ import ChainPoll from './ChainPoll'
 
 const timeout = delay => new Promise(resolve => setTimeout(resolve, delay))
 
-describe('ChainPoll', () => {
-  test.only('awaits for the chain to complete before executing', async () => {
+describe.skip('ChainPoll', () => {
+  test('awaits for the chain to complete before executing', async () => {
     let resolveFirstPromise
     let firstPromiseRun = false
     const firstResolutor = () =>

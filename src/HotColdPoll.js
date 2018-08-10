@@ -1,27 +1,28 @@
 import ChainPoll from './ChainPoll'
 
-function createItem(content) {
+function createItem(content, shouldBeKilled = false) {
   return {
+    closingTimeout: null,
     content,
     inUse: false,
+    shouldBeKilled,
   }
 }
-
-let uuid = 0
 
 export const messages = {
   BLOCK: 'BLOCK',
   GO: 'GO',
   REMOVE: 'REMOVE',
+  REUSE: 'REUSE',
   START: 'START',
 }
 
 export default class {
-  constructor({ createCold, createHot, maxSize, minSize }) {
-    this.createCold = createCold
-    this.createHot = createHot
+  constructor({ createSpot, maxSize, minSize, retentionDelay = 0 }) {
+    this.createSpot = createSpot
     this.maxSize = Math.max(1, Math.max(minSize, maxSize))
     this.minSize = minSize
+    this.retentionDelay = retentionDelay
 
     this.poll = []
     this.waitPoll = new ChainPoll()
@@ -31,12 +32,13 @@ export default class {
 
   async init() {
     this.poll.push(
-      ...(await Promise.all(Array.from({ length: this.minSize }).map(async () => createItem(await this.createHot())))),
+      ...(await Promise.all(Array.from({ length: this.minSize }).map(async () => createItem(await this.createSpot())))),
     )
   }
 
   async get(notify = () => {}) {
     return new Promise(resolveItem =>
+      // waitPoll locks on until the current demand has gotten a spot to use
       this.waitPoll.demand(
         () =>
           new Promise(resolveDemand => {
@@ -57,37 +59,49 @@ export default class {
                     resolveUsageDemand()
                     notify(messages.START, freed)
 
-                    const firstNotUsed = this.poll.find(({ inUse }) => !inUse)
-                    if (firstNotUsed) {
-                      firstNotUsed.inUse = true
+                    let item = this.poll.find(({ inUse }) => !inUse)
+
+                    if (item) {
+                      if (item.closingTimeout !== null) {
+                        notify(messages.REUSE)
+
+                        clearTimeout(item.closingTimeout)
+                        item.closingTimeout = null
+                      }
+
+                      item.inUse = true
                       resolveDemand()
-
-                      resolveItem({
-                        item: firstNotUsed.content,
-                        release: () => {
-                          firstNotUsed.inUse = false
-
-                          resolveUsage()
-                        },
-                      })
                     } else {
-                      const item = createItem()
+                      item = createItem(null, true)
                       item.inUse = true
 
                       this.poll.push(item)
                       resolveDemand()
 
-                      item.content = await this.createCold()
-
-                      resolveItem({
-                        item: item.content,
-                        release: () => {
-                          this.poll.splice(this.poll.indexOf(item), 1)
-
-                          resolveUsage()
-                        },
-                      })
+                      item.content = await this.createSpot()
                     }
+
+                    resolveItem({
+                      item: item.content,
+                      release: (close = () => {}) => {
+                        item.inUse = false
+
+                        resolveUsage()
+
+                        if (item.shouldBeKilled) {
+                          const kill = () => {
+                            this.poll.splice(this.poll.indexOf(item), 1)
+                            close()
+                          }
+
+                          if (this.retentionDelay > 0) {
+                            item.closingTimeout = setTimeout(kill, this.retentionDelay)
+                          } else {
+                            kill()
+                          }
+                        }
+                      },
+                    })
                   }),
               )
             }).then(() => {
@@ -95,6 +109,7 @@ export default class {
               if (index > -1) {
                 this.usagePoll.splice(index, 1)
               }
+
               return notify(messages.REMOVE)
             })
 

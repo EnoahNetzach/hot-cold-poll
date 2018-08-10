@@ -17,12 +17,20 @@ export function updateDemand(update) {
 updateDemand(0)
 
 const stopDemandEl = document.createElement('button')
-stopDemandEl.innerText = 'STOP'
+stopDemandEl.innerText = 'STOP DEMAND'
 stopDemandEl.className = 'stopDemand'
 document.getElementById('app').appendChild(stopDemandEl)
 
 export function registerOnStopDemand(onStopDemand) {
-  stopDemandEl.addEventListener('click', onStopDemand)
+  const callback = () => {
+    stopDemandEl.removeEventListener('click', callback)
+    stopDemandEl.innerText = 'DEMAND STOPPED'
+    stopDemandEl.className = 'demandStopped'
+
+    onStopDemand()
+  }
+
+  stopDemandEl.addEventListener('click', callback)
 }
 
 let start
