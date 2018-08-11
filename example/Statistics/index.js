@@ -10,17 +10,16 @@ const container = document.createElement('div')
 container.className = 'container'
 mirror.appendChild(container)
 
-const demandChartEl = document.createElement('canvas')
-container.appendChild(demandChartEl)
-
-function getChart(name) {
+function getChart(name, time = false) {
   const chartEl = document.createElement('canvas')
   container.appendChild(chartEl)
+
+  const startingTime = new Date()
 
   const chart = new Chart(chartEl, {
     type: 'line',
     data: {
-      labels: [0],
+      labels: [time ? startingTime : 0],
       datasets: [
         {
           backgroundColor: 'red',
@@ -28,6 +27,7 @@ function getChart(name) {
           data: [0],
           fill: false,
           label: 'value',
+          lineTension: 0,
         },
         {
           backgroundColor: 'blue',
@@ -35,6 +35,7 @@ function getChart(name) {
           data: [0],
           fill: false,
           label: 'mean',
+          lineTension: 0,
         },
         {
           backgroundColor: 'green',
@@ -42,19 +43,23 @@ function getChart(name) {
           data: [0],
           fill: false,
           label: ' moving mean',
+          lineTension: 0,
         },
       ],
     },
     options: {
-      responsive: true,
-      title: {
-        display: true,
-        text: name,
+      animation: {
+        duration: 0,
       },
+      hover: {
+        animationDuration: 0,
+      },
+      responsive: true,
+      responsiveAnimationDuration: 0,
       scales: {
         xAxes: [
           {
-            display: true,
+            type: time ? 'time' : undefined,
             scaleLabel: {
               display: false,
             },
@@ -69,13 +74,19 @@ function getChart(name) {
           },
         ],
       },
+      title: {
+        display: true,
+        text: name,
+      },
     },
   })
 
-  return newValue => {
+  return (passedValue, increment = false) => {
+    const newValue = increment ? chart.data.datasets[0].data.slice(-1)[0] + passedValue : passedValue
+
     const numOfValues = chart.data.labels.length
 
-    chart.data.labels.push(numOfValues)
+    chart.data.labels.push(time ? new Date() : numOfValues)
 
     // values
     chart.data.datasets[0].data.push(newValue)
@@ -92,4 +103,10 @@ function getChart(name) {
   }
 }
 
-export const updateDemandChart = getChart('Demand')
+export const updateDemandChart = getChart('Demand', true)
+
+export const updateSpotUsageChart = getChart('Spot usage', true)
+
+export const updateWaitingTimeChart = getChart('Waiting time', true)
+
+export const updateUsageTimeChart = getChart('Usage time', true)
