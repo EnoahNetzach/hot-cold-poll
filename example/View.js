@@ -20,10 +20,14 @@ export function updateDemand(update) {
 }
 updateDemand(0)
 
+const stickyButtonsEl = document.createElement('div')
+stickyButtonsEl.className = 'stickyButtons'
+view.prepend(stickyButtonsEl)
+
 const stopDemandEl = document.createElement('button')
 stopDemandEl.innerText = 'START DEMAND'
 stopDemandEl.className = 'demandStopped'
-view.prepend(stopDemandEl)
+stickyButtonsEl.appendChild(stopDemandEl)
 
 export function registerDemand(start, stop) {
   const onStart = () => {
@@ -51,9 +55,25 @@ export function registerDemand(start, stop) {
   stopDemandEl.addEventListener('click', onStart)
 }
 
+let paused = false
+const pauseTimeSlicesEl = document.createElement('button')
+pauseTimeSlicesEl.innerText = 'PAUSE TIME SLICES'
+pauseTimeSlicesEl.className = 'pauseTimeSlices'
+stickyButtonsEl.appendChild(pauseTimeSlicesEl)
+
+pauseTimeSlicesEl.addEventListener('click', () => {
+  paused = !paused
+
+  pauseTimeSlicesEl.innerText = `${paused ? 'RESUME' : 'PAUSE'} TIME SLICES`
+})
+
 let start
 let last
 export function createTimeSlice(reason, clone = true) {
+  if (paused) {
+    return
+  }
+
   if (!start) {
     start = new Date().getTime()
     last = start
@@ -82,3 +102,12 @@ export function createTimeSlice(reason, clone = true) {
 
   container.after(sliceEl)
 }
+
+const deleteTimeSlicesEl = document.createElement('button')
+deleteTimeSlicesEl.innerText = 'DELETE TIME SLICES'
+deleteTimeSlicesEl.className = 'deleteTimeSlices'
+stickyButtonsEl.appendChild(deleteTimeSlicesEl)
+
+deleteTimeSlicesEl.addEventListener('click', () =>
+  [...view.querySelectorAll('.slice')].forEach(slice => slice.remove()),
+)

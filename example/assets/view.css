@@ -4,24 +4,36 @@
   padding: 10px;
 }
 
-#view .stopDemand,
-#view .demandStopped {
-  border: 1px solid;
-  color: whitesmoke;
-  cursor: pointer;
-  display: inline-block;
+#view .stickyButtons {
+  display: inline-grid;
+  gap: 5px;
+  height: 0;
   left: 100%;
-  outline: none;
   padding: 10px 25px;
   position: sticky;
-  text-decoration: none;
-  top: 30px;
+  top: 20px;
   z-index: 9;
 }
 
+#view .stopDemand,
+#view .demandStopped,
+#view .pauseTimeSlices,
+#view .deleteTimeSlices {
+  border: 1px solid;
+  color: whitesmoke;
+  cursor: pointer;
+  display: block;
+  height: 30px;
+  outline: none;
+  text-decoration: none;
+}
+
 #view .stopDemand:active,
-#view .demandStopped:active {
-  top: 31px;
+#view .demandStopped:active,
+#view .pauseTimeSlices:active,
+#view .deleteTimeSlices:active {
+  margin-bottom: -1px;
+  margin-top: 1px;
 }
 
 #view .stopDemand {
@@ -44,6 +56,32 @@
 
 #view .demandStopped:active {
   box-shadow: inset 4px 4px 2px -3px darkslategray;
+}
+
+#view .pauseTimeSlices {
+  background-color: dimgray;
+  border-color: black;
+}
+
+#view .pauseTimeSlices:hover {
+  background-color: gray;
+}
+
+#view .pauseTimeSlices:active {
+  box-shadow: inset 4px 4px 2px -3px black;
+}
+
+#view .deleteTimeSlices {
+  background-color: darkmagenta;
+  border-color: purple;
+}
+
+#view .deleteTimeSlices:hover {
+  background-color: blueviolet;
+}
+
+#view .deleteTimeSlices:active {
+  box-shadow: inset 4px 4px 2px -3px purple;
 }
 
 #view .slice {
