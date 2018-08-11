@@ -26,7 +26,7 @@ const createSquare = squareCreator(View, (message, id) => {
 async function run() {
   const poll = new HotColdPoll({
     createSpot: createSquare,
-    maxSize: 15,
+    maxSize: 50,
     minSize: 5,
     retentionDelay: 5000,
   })
@@ -72,7 +72,7 @@ async function run() {
     square
       .use(pid)
       .then(() => release(() => square.close()))
-      .then(() => updateUsageTimeChart(new Date().getTime() - startUsageTime))
+      .then(() => updateUsageTimeChart((new Date().getTime() - startUsageTime) / 1000))
 
     updateDemandChart(updateDemand(-1))
     updateWaitingTimeChart((startUsageTime - startWaitingTime) / 1000)
@@ -80,7 +80,7 @@ async function run() {
   })
 
   const createDemand = () => {
-    const demandUpdate = Math.round(Math.random() * 4) + 1
+    const demandUpdate = Math.round(Math.random() * 19) + 1
 
     updateDemandChart(updateDemand(demandUpdate))
 
