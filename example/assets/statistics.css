@@ -1,0 +1,23 @@
+#statistics {
+  /* background: black; */
+  border-right: 1px solid darkgray;
+  bottom: 0;
+  color: whitesmoke;
+  display: grid;
+  left: 0;
+  min-width: 700px;
+  overflow: hidden;
+  padding: 10px 20px 10px;
+  resize: horizontal;
+  transform: scale(-1, 1);
+}
+
+#statistics .mirror {
+  transform: scale(-1, 1);
+  pointer-events: none;
+}
+
+#statistics .container {
+  overflow-y: auto;
+  pointer-events: all;
+}

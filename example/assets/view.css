@@ -1,64 +1,64 @@
-* {
-  box-sizing: content-box;
+#view {
+  min-width: 750px;
+  overflow-y: auto;
+  padding: 10px;
 }
 
-.stopDemand,
-.demandStopped {
+#view .stopDemand,
+#view .demandStopped {
   border: 1px solid;
-  bottom: 30px;
   color: whitesmoke;
+  cursor: pointer;
   display: inline-block;
+  left: 100%;
   outline: none;
   padding: 10px 25px;
-  position: fixed;
-  right: 30px;
+  position: sticky;
   text-decoration: none;
+  top: 30px;
+  z-index: 9;
 }
 
-.stopDemand:active,
-.demandStopped:active {
-  bottom: 29px;
+#view .stopDemand:active,
+#view .demandStopped:active {
+  top: 31px;
 }
 
-.stopDemand {
+#view .stopDemand {
   background-color: orangered;
   border-color: firebrick;
-  cursor: pointer;
 }
 
-.stopDemand:hover {
+#view .stopDemand:hover {
   background-color: tomato;
 }
 
-.stopDemand:active {
-  bottom: 29px;
+#view .stopDemand:active {
   box-shadow: inset 4px 4px 2px -3px firebrick;
 }
 
-.demandStopped {
+#view .demandStopped {
   background-color: steelblue;
   border-color: darkslategray;
-  cursor: not-allowed;
 }
 
-.demandStopped:active {
-  bottom: 29px;
+#view .demandStopped:active {
   box-shadow: inset 4px 4px 2px -3px darkslategray;
 }
 
-.slice {
+#view .slice {
   background: lavender;
   margin: 5px 0;
   padding: 10px;
 }
 
-.reason {
+#view .reason {
   color: slategray;
   margin: 10px 5px;
   text-transform: capitalize;
 }
 
-.grid {
+#view .grid {
   background: lightgray;
   display: grid;
   gap: 5px;
@@ -69,12 +69,12 @@
   width: 100%;
 }
 
-.demand {
+#view .demand {
   grid-column: 1 / -1;
   margin: 10px 0;
 }
 
-.square {
+#view .square {
   background: azure;
   color: darkgray;
   min-height: 50px;
@@ -84,7 +84,7 @@
   transition: background 250ms linear;
 }
 
-.square::before {
+#view .square::before {
   content: '';
   display: inline-block;
   width: 1px;
@@ -92,21 +92,21 @@
   padding-bottom: 80%;
 }
 
-.square.open {
+#view .square.open {
   background: greenyellow;
 }
 
-.square.used {
+#view .square.used {
   background: darkorchid;
   color: white;
 }
 
-.square.unused {
+#view .square.unused {
   background: cadetblue;
   color: white;
 }
 
-.content {
+#view .content {
   align-items: center;
   display: inline-flex;
   flex-direction: column;
@@ -118,24 +118,24 @@
   width: 100%;
 }
 
-.square > small {
+#view .square > small {
   border: solid 2px transparent;
   color: lightgray;
   line-height: 1;
   position: absolute;
 }
 
-.index {
+#view .index {
   left: 0;
   top: 0;
 }
 
-.times-used {
+#view .times-used {
   right: 0;
   top: 0;
 }
 
-.duration {
+#view .duration {
   bottom: 0;
   left: 0;
   width: 100%;

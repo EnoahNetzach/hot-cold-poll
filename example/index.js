@@ -1,7 +1,8 @@
-import ChainPoll from '../src/ChainPoll'
-import HotColdPoll, { messages as hotColdPollMessages } from '../src/HotColdPoll'
+import ChainPoll from '../lib/ChainPoll'
+import HotColdPoll, { messages as hotColdPollMessages } from '../lib/HotColdPoll'
 import squareCreator, { messages as squareCreatorMessages } from './Square'
-import View, { createTimeSlice, registerOnStopDemand, updateDemand } from './View'
+import { updateDemandChart } from './Statistics'
+import View, { createTimeSlice, registerDemand, updateDemand } from './View'
 
 const timeout = delay => new Promise(resolve => setTimeout(resolve, delay))
 
@@ -21,8 +22,8 @@ const createSquare = squareCreator(View, (message, id) => {
 async function run() {
   const poll = new HotColdPoll({
     createSpot: createSquare,
-    maxSize: 5,
-    minSize: 2,
+    maxSize: 15,
+    minSize: 5,
     retentionDelay: 5000,
   })
 
@@ -31,8 +32,6 @@ async function run() {
   await poll.init()
 
   const demandPoll = new ChainPoll(async () => {
-    await timeout(200)
-
     const pid = squareUid++
     const { item: square, release } = await poll.get((message, ...args) => {
       switch (message) {
@@ -67,7 +66,7 @@ async function run() {
     }
 
     square.use(pid).then(() => release(() => square.close()))
-    updateDemand(-1)
+    updateDemandChart(updateDemand(-1))
 
     createTimeSlice('decrease demand -1', false)
 
@@ -75,19 +74,27 @@ async function run() {
   })
 
   const createDemand = () => {
-    const demandUpdate = Math.round(Math.random() * 2)
-    updateDemand(demandUpdate)
+    const demandUpdate = Math.round(Math.random() * 4) + 1
+
+    updateDemandChart(updateDemand(demandUpdate))
 
     Array.from({ length: demandUpdate }).forEach(() => demandPoll.demand())
   }
-  createDemand()
-  const demandInterval = setInterval(createDemand, 2000)
+  let demandInterval
 
-  registerOnStopDemand(() => {
-    clearInterval(demandInterval)
+  registerDemand(
+    () => {
+      createDemand()
+      demandInterval = setInterval(createDemand, 2000)
 
-    createTimeSlice('stop demand', false)
-  })
+      createTimeSlice('start demand', false)
+    },
+    () => {
+      clearInterval(demandInterval)
+
+      createTimeSlice('stop demand', false)
+    },
+  )
 }
 
 run()

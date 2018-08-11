@@ -1,13 +1,15 @@
 {
-  "name": "parcel-sandbox",
+  "name": "hot-cold-poll",
   "version": "1.0.0",
-  "description": "Simple Parcel Sandbox",
+  "description": "",
   "main": "index.html",
   "scripts": {
     "start": "parcel index.html --open",
     "build": "parcel build index.html"
   },
-  "dependencies": {},
+  "dependencies": {
+    "chart.js": "^2.7.2"
+  },
   "devDependencies": {
     "parcel-bundler": "^1.6.1"
   }

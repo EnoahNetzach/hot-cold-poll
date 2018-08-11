@@ -1,6 +1,8 @@
+const view = document.getElementById('view')
+
 const container = document.createElement('div')
 container.className = 'grid'
-document.getElementById('app').appendChild(container)
+view.appendChild(container)
 
 export default container
 
@@ -13,24 +15,40 @@ export function updateDemand(update) {
   demand += update
 
   demandEl.innerText = `Demand: ${demand}`
+
+  return demand
 }
 updateDemand(0)
 
 const stopDemandEl = document.createElement('button')
-stopDemandEl.innerText = 'STOP DEMAND'
-stopDemandEl.className = 'stopDemand'
-document.getElementById('app').appendChild(stopDemandEl)
+stopDemandEl.innerText = 'START DEMAND'
+stopDemandEl.className = 'demandStopped'
+view.prepend(stopDemandEl)
 
-export function registerOnStopDemand(onStopDemand) {
-  const callback = () => {
-    stopDemandEl.removeEventListener('click', callback)
-    stopDemandEl.innerText = 'DEMAND STOPPED'
-    stopDemandEl.className = 'demandStopped'
+export function registerDemand(start, stop) {
+  const onStart = () => {
+    stopDemandEl.removeEventListener('click', onStart)
 
-    onStopDemand()
+    start()
+
+    stopDemandEl.innerText = 'STOP DEMAND'
+    stopDemandEl.className = 'stopDemand'
+
+    stopDemandEl.addEventListener('click', onStop)
   }
 
-  stopDemandEl.addEventListener('click', callback)
+  const onStop = () => {
+    stopDemandEl.removeEventListener('click', onStop)
+
+    stop()
+
+    stopDemandEl.innerText = 'START DEMAND'
+    stopDemandEl.className = 'demandStopped'
+
+    stopDemandEl.addEventListener('click', onStart)
+  }
+
+  stopDemandEl.addEventListener('click', onStart)
 }
 
 let start
